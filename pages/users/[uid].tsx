@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { User } from "../../models/User";
 import firebase from "firebase/app";
 import Layout from "../../componts/Layout";
@@ -12,6 +12,8 @@ export default function UserShow() {
   const [user, setUser] = useState<User>(null);
   const router = useRouter();
   const query = router.query as Query;
+  const [body, setBody] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     if (query.uid === undefined) {
@@ -34,16 +36,59 @@ export default function UserShow() {
     }
     loadUser();
   }, [query.uid]);
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIsSending(true);
+    await firebase.firestore().collection("questions").add({
+      senderUid: firebase.auth().currentUser.uid,
+      receiverUid: user.uid,
+      body,
+      isReplied: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    setIsSending(false);
+
+    setBody("");
+    alert("質問を送信しました");
+  }
   return (
-    <Layout>
-      {user && (
-        <div className="container">
-          <div className="text-center">
-            <h1 className="h4">{user.name}さんのページ</h1>
-            <div className="m-5">{user.name}さんに質問しよう</div>
+    <div className="">
+      <Layout>
+        {user && (
+          <div className="container">
+            <div className="text-center">
+              <h1 className="h4">{user.name}さんのページ</h1>
+              <div className="m-5">{user.name}さんに質問しよう</div>
+            </div>
           </div>
+        )}
+      </Layout>
+      <div className="row justify-content-center mb-3">
+        <div className="col-12 col-md-6">
+          <form onSubmit={onSubmit}>
+            <textarea
+              className="form-control"
+              placeholder="おげんきですか？"
+              rows={6}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              required
+            ></textarea>
+            <div className="m-3">
+              {isSending ? (
+                <div className="spinner-border text-secondary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              ) : (
+                <button type="submit" className="btn btn-primary">
+                  質問を送信する
+                </button>
+              )}
+            </div>
+          </form>
         </div>
-      )}
-    </Layout>
+      </div>
+    </div>
   );
 }
