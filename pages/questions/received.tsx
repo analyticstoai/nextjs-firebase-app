@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import firebase from "firebase";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Layout from "../../componts/Layout";
 import { useAuthentication } from "../../hooks/authentication";
@@ -107,6 +108,7 @@ useEffect(() => {
       <div className="row justify-content-center">
         <div className="col-12 col-md-6" ref={scrollContainerRef}>
           {questions.map((question) => (
+              <Link href="/questions/[id]" as={`/questions/${question.id}`} key={question.id}>
             <div className="card my-3" key={question.id}>
               <div className="card-body">
                 <div className="text-truncate">{question.body}</div>
@@ -119,6 +121,7 @@ useEffect(() => {
                 </small>
               </div>
             </div>
+              </Link>
           ))}
         </div>
       </div>

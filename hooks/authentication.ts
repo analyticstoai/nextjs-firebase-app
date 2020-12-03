@@ -3,10 +3,6 @@ import { useEffect } from "react";
 import { atom, useRecoilState } from "recoil";
 import { User } from "../models/User";
 
-const userState = atom<User>({
-  key: "user",
-  default: null,
-});
 
 async function createUserifNotFound(user: User) {
   const userRef = firebase.firestore().collection("users").doc(user.uid);
@@ -21,7 +17,12 @@ async function createUserifNotFound(user: User) {
 }
 
 export function useAuthentication() {
+  const userState = atom<User>({
+    key: "user",
+    default: null,
+  });
   const [user, setUser] = useRecoilState(userState);
+  
 
   useEffect(() => {
     if (user !== null) {
